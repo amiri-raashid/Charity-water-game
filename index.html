@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Source | charity: water</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --yellow:#FFC700;--teal:#00A19D;
+  --bg:#0a1628;--bg2:#0f1e36;--bg3:#152540;
+  --text:#dceeff;--muted:#5a7a99;--border:rgba(255,255,255,0.09);
+  --F:#FFB700;--L:#00C9A7;--M:#7B8FF5;
+  --drought:#7b2d2d;--net:#0a5e5b;--treat:#5a2d82;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+#app{display:flex;flex-direction:column;height:100vh;max-width:1300px;margin:0 auto;padding:10px 14px}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding:22px 4px;margin-bottom:12px;flex-shrink:0;gap:16px}
+.hdr-brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.hdr-brand-text{display:flex;flex-direction:column;line-height:1.1}
+.hdr-brand-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;letter-spacing:.03em}
+.hdr-brand-tag{font-size:9px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.hdr-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.01em}
+.hdr-title em{color:var(--yellow);font-style:normal}
+.hdr-title span{color:var(--muted);font-weight:800;font-size:24px}
+.hdr-stats{display:flex;gap:24px}
+.hs .v{font-size:22px;font-weight:700;font-family:'Syne',sans-serif;text-align:right}
+.hs .k{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:right;margin-top:1px}
+
+/* MAIN 3-COL */
+.main{display:flex;gap:10px;flex:1;min-height:0;overflow:hidden}
+.col-l{width:195px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.col-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.col-r{width:210px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+
+/* PANELS */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:11px 13px}
+.pt{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:9px;font-weight:500}
+
+/* RESOURCES */
+.ri-wrap{margin-bottom:7px}
+.ri-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.ri-lbl{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500}
+.rdot{width:8px;height:8px;border-radius:50%}
+.ri-cnt{font-family:'DM Mono',monospace;font-size:12px}
+.tray{display:flex;gap:3px;flex-wrap:wrap;min-height:36px;padding:5px 6px;background:var(--bg3);border-radius:7px;border:1px dashed rgba(255,255,255,0.1)}
+.tok{width:26px;height:26px;border-radius:50%;cursor:grab;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#000;user-select:none;flex-shrink:0;transition:transform .1s,box-shadow .1s}
+.tok:hover{transform:scale(1.18);box-shadow:0 0 8px rgba(255,255,255,.15)}
+.tok.dragging{opacity:.25}
+.tok.F{background:var(--F)}.tok.L{background:var(--L)}.tok.M{background:var(--M)}
+
+/* BUILD */
+.bi{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px 11px;margin-bottom:7px;transition:border-color .2s}
+.bi.ready{border-color:var(--yellow)}
+.bi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.bi-name{font-size:12px;font-weight:700;font-family:'Syne',sans-serif}
+.bi-costs{display:flex;gap:2px}
+.bc{width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#000}
+.dz{min-height:48px;border:1px dashed rgba(255,255,255,0.13);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);margin-top:5px;padding:5px 7px;gap:3px;flex-wrap:wrap;transition:border-color .2s,background .2s}
+.dz.over{border-color:var(--yellow);background:rgba(255,199,0,.07)}
+.bbtn{width:100%;margin-top:5px;padding:7px;border-radius:6px;border:none;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;background:var(--yellow);color:#1a0f00;transition:opacity .15s}
+.bbtn:hover:not(:disabled){opacity:.85}
+.bbtn:disabled{opacity:.25;cursor:not-allowed}
+
+/* BOARD */
+.bpanel{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:10px;flex:1;display:flex;flex-direction:column;min-height:0}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;flex-shrink:0}
+.leg{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted)}
+.lsw{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+.canvas-wrap{flex:1;min-height:0;overflow:auto;position:relative}
+canvas{display:block}
+canvas.pick{cursor:crosshair}
+
+/* PLACEMENT BANNER */
+.pbanner{background:rgba(255,199,0,.1);border:1px solid rgba(255,199,0,.3);border-radius:7px;padding:6px 10px;font-size:10px;color:var(--yellow);display:none;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px;flex-shrink:0}
+.pbanner.show{display:flex}
+.pcancel{background:transparent;border:1px solid rgba(255,199,0,.4);color:var(--yellow);border-radius:4px;padding:3px 9px;font-size:9px;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* PROGRESS */
+.prog-wrap{margin-top:7px;flex-shrink:0}
+.prog-lbs{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-bottom:3px}
+.prog-t{background:var(--bg3);border-radius:4px;height:6px;overflow:hidden}
+.prog-f{height:100%;background:linear-gradient(90deg,var(--teal),var(--yellow));border-radius:4px;transition:width .4s}
+
+/* LOG */
+.log{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:8px 11px;height:90px;overflow-y:auto;flex-shrink:0}
+.le{font-size:10px;color:var(--muted);padding:2px 0;border-bottom:1px solid var(--border);display:flex;gap:4px;line-height:1.4}
+.le:first-child{color:var(--text)}.le:last-child{border:none}
+
+/* TURN BTN */
+.trow{display:flex;justify-content:flex-end;flex-shrink:0;padding-top:5px}
+.bturn{background:var(--teal);color:#fff;border:none;padding:9px 24px;border-radius:8px;font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:opacity .15s}
+.bturn:hover{opacity:.88}
+
+/* RIGHT INFO */
+.ic{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 12px}
+.ic-icon{font-size:20px;margin-bottom:5px}
+.ic-title{font-size:12px;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:4px}
+.ic-body{font-size:10px;color:var(--muted);line-height:1.65}
+.ic-body strong{color:var(--text)}
+.sep{height:1px;background:var(--border);margin:5px 0}
+.tag{display:inline-block;font-size:9px;padding:2px 6px;border-radius:8px;font-weight:600;margin:2px 1px 0}
+.tF{background:rgba(255,183,0,.18);color:var(--F)}
+.tL{background:rgba(0,201,167,.18);color:var(--L)}
+.tM{background:rgba(123,143,245,.18);color:var(--M)}
+
+/* SCREENS */
+.scr{display:none;position:fixed;inset:0;background:rgba(10,22,40,.96);z-index:50;align-items:center;justify-content:center;padding:20px}
+.scr.show{display:flex}
+.scard{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:480px;width:100%;text-align:center}
+.scard h2{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px}
+.scard p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px}
+.bicon{font-size:48px;margin-bottom:12px}
+.btn-big{background:var(--yellow);color:#1a0f00;border:none;padding:12px 34px;border-radius:9px;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0;text-align:left}
+.ritem{background:var(--bg3);border-radius:8px;padding:9px}
+.ritem .ri{font-size:16px;margin-bottom:2px}
+.ritem .rt{font-size:11px;font-weight:600;margin-bottom:1px}
+.ritem .rd{font-size:10px;color:var(--muted);line-height:1.4}
+.irow{display:flex;gap:9px;justify-content:center;margin:10px 0;flex-wrap:wrap}
+.ichip{background:var(--bg3);border-radius:8px;padding:9px 16px}
+.ichip .iv{font-size:20px;font-weight:800;font-family:'Syne',sans-serif;color:var(--yellow)}
+.ichip .ik{font-size:9px;color:var(--muted);margin-top:1px}
+.cta-a{display:inline-block;background:var(--teal);color:#fff;padding:8px 20px;border-radius:7px;text-decoration:none;font-weight:600;font-size:12px;margin:6px 0 12px}
+.bsm{background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:7px;font-size:11px;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--teal);color:#fff;border-radius:9px;padding:9px 18px;font-size:12px;box-shadow:0 4px 18px rgba(0,161,157,.4);transition:transform .35s;z-index:200;text-align:center;pointer-events:none;max-width:300px}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast .tb{font-size:15px;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:1px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-brand" style="align-items:center">
+      <img src="data:image/png;base64,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" alt="charity: water" style="height:28px;width:auto;display:block">
+    </div>
+    <div class="hdr-title"><em>Source</em> <span>— Water Strategy</span></div>
+    <div class="hdr-stats">
+      <div class="hs"><div class="v" id="h-conn">0%</div><div class="k">Connected</div></div>
+      <div class="hs"><div class="v" id="h-turn">1</div><div class="k">Turn</div></div>
+      <div class="hs"><div class="v" id="h-lost">0</div><div class="k">Lost</div></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- LEFT -->
+    <div class="col-l">
+      <div class="panel">
+        <div class="pt">Resources</div>
+        <div class="ri-wrap">
+          <div class="ri-row">
+            <div class="ri-lbl"><div class="rdot" style="background:var(--F)"></div>Funding</div>
+            <div class="ri-cnt" id="cnt-F">0</div>
+          </div>
+          <div class="tray" id="tray-F" ondragover="e=>e.preventDefault()" ondrop="dropReturn(event,'F')"></div>
+        </div>
+        <div class="ri-wrap">
+          <div class="ri-row">
+            <div class="ri-lbl"><div class="rdot" style="background:var(--L)"></div>Labor</div>
+            <div class="ri-cnt" id="cnt-L">0</div>
+          </div>
+          <div class="tray" id="tray-L" ondragover="e=>e.preventDefault()" ondrop="dropReturn(event,'L')"></div>
+        </div>
+        <div class="ri-wrap" style="margin-bottom:0">
+          <div class="ri-row">
+            <div class="ri-lbl"><div class="rdot" style="background:var(--M)"></div>Materials</div>
+            <div class="ri-cnt" id="cnt-M">0</div>
+          </div>
+          <div class="tray" id="tray-M" ondragover="e=>e.preventDefault()" ondrop="dropReturn(event,'M')"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="pt">Build</div>
+
+        <div class="bi" id="bi-well">
+          <div class="bi-top">
+            <div class="bi-name">💧 Well</div>
+            <div class="bi-costs">
+              <div class="bc" style="background:var(--F)">F</div>
+              <div class="bc" style="background:var(--L)">L</div>
+            </div>
+          </div>
+          <div class="dz" id="dz-well"
+            ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event,'well')">
+            Drop resources here
+          </div>
+          <button class="bbtn" id="bb-well" disabled onclick="activatePlacement('well')">Place Well →</button>
+        </div>
+
+        <div class="bi" id="bi-pipe">
+          <div class="bi-top">
+            <div class="bi-name">🔧 Pipeline</div>
+            <div class="bi-costs">
+              <div class="bc" style="background:var(--M)">M</div>
+              <div class="bc" style="background:var(--M)">M</div>
+            </div>
+          </div>
+          <div class="dz" id="dz-pipe"
+            ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event,'pipe')">
+            Drop resources here
+          </div>
+          <button class="bbtn" id="bb-pipe" disabled onclick="activatePlacement('pipe')">Place Pipeline →</button>
+        </div>
+
+        <div class="bi" id="bi-treat">
+          <div class="bi-top">
+            <div class="bi-name">🏭 Treatment</div>
+            <div class="bi-costs">
+              <div class="bc" style="background:var(--F)">F</div>
+              <div class="bc" style="background:var(--F)">F</div>
+              <div class="bc" style="background:var(--L)">L</div>
+              <div class="bc" style="background:var(--M)">M</div>
+            </div>
+          </div>
+          <div class="dz" id="dz-treat"
+            ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event,'treat')">
+            Drop resources here
+          </div>
+          <button class="bbtn" id="bb-treat" disabled onclick="activatePlacement('treat')">Place Treatment →</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="pt">Trade  <span style="color:var(--muted);font-size:9px;text-transform:none;letter-spacing:0">2 of any → 1 of any other</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <!-- Give selector -->
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:10px;color:var(--muted);width:28px">Give</span>
+            <select id="trade-give" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:5px 7px;cursor:pointer">
+              <option value="F">💰 Funding</option>
+              <option value="L">🔨 Labor</option>
+              <option value="M">⚙️ Materials</option>
+            </select>
+          </div>
+          <!-- Get selector -->
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:10px;color:var(--muted);width:28px">Get</span>
+            <select id="trade-get" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;padding:5px 7px;cursor:pointer">
+              <option value="L">🔨 Labor</option>
+              <option value="M">⚙️ Materials</option>
+              <option value="F">💰 Funding</option>
+            </select>
+          </div>
+          <button onclick="doTrade()" style="width:100%;padding:7px;border-radius:6px;border:none;background:var(--bg3);color:var(--text);font-size:11px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;border:1px solid var(--border);transition:border-color .2s" onmouseover="this.style.borderColor='var(--yellow)'" onmouseout="this.style.borderColor='var(--border)'">Trade ×2 → ×1</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIDDLE: board -->
+    <div class="col-m">
+      <div class="bpanel">
+        <div class="legend">
+          <div class="leg"><div class="lsw" style="background:#1e6b8c"></div>Urban 💰</div>
+          <div class="leg"><div class="lsw" style="background:#2d6a4f"></div>Village 🔨</div>
+          <div class="leg"><div class="lsw" style="background:#5a4a2a"></div>Terrain ⚙️</div>
+          <div class="leg"><div class="lsw" style="background:#7b2d2d"></div>Drought</div>
+          <div class="leg"><div class="lsw" style="background:#0a5e5b"></div>Network</div>
+          <div class="leg"><div class="lsw" style="background:#5a2d82"></div>Treatment</div>
+          <div class="leg"><div class="lsw" style="background:rgba(255,199,0,.35);border:1px solid var(--yellow)"></div>Valid target</div>
+        </div>
+        <div class="pbanner" id="pbanner">
+          <span id="pmsg">Click a highlighted hex</span>
+          <button class="pcancel" onclick="cancelPlacement()">✕ Cancel</button>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="board"></canvas>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbs"><span>Communities connected</span><span id="prog-lbl">0/0</span></div>
+          <div class="prog-t"><div class="prog-f" id="prog-f" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="log" id="log"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;flex-shrink:0">
+        <div style="background:rgba(255,199,0,0.07);border:1px solid rgba(255,199,0,0.25);border-radius:9px;padding:8px 14px;flex:1;display:flex;align-items:center;gap:10px">
+          <span style="font-size:16px">🎯</span>
+          <div>
+            <div style="font-size:10px;font-weight:700;font-family:'Syne',sans-serif;color:var(--yellow);margin-bottom:2px">Mission Goal</div>
+            <div style="font-size:10px;color:var(--muted);line-height:1.5">Connect <strong style="color:var(--text)">70%</strong> of communities before drought claims <strong style="color:#e07070">40%</strong>. <span style="color:rgba(255,199,0,0.7)">100% of real donations go directly to water projects.</span></div>
+          </div>
+        </div>
+        <button class="bturn" onclick="endTurn()">End Turn →</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: info -->
+    <div class="col-r">
+      <div style="background:rgba(255,199,0,0.08);border:1px solid rgba(255,199,0,0.3);border-radius:11px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:18px">💧</span>
+          <strong style="font-family:'Syne',sans-serif;font-size:12px;color:var(--yellow)">charity: water</strong>
+        </div>
+        <p style="font-size:11px;color:var(--text);line-height:1.6;margin-bottom:10px"><strong style="color:var(--yellow)">100% of public donations go directly to water projects.</strong></p>
+        <a href="https://charitywater.org/donate" target="_blank" style="display:block;text-align:center;background:var(--teal);color:#fff;padding:7px 12px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;text-decoration:none;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Donate at charitywater.org →</a>
+      </div>
+      <div class="panel">
+        <div class="pt">How to play</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.8">
+          1. Earn resources each turn — 1 per networked hex of that type.<br>
+          2. <strong style="color:var(--text)">Trade</strong>: swap 2 of any resource for 1 of another using the Trade panel.<br>
+          3. Drag tokens from trays onto a build slot.<br>
+          4. Click <strong style="color:var(--text)">Place →</strong> then click a <strong style="color:var(--yellow)">yellow-highlighted</strong> hex.<br>
+          5. Click <strong style="color:var(--text)">End Turn</strong> — drought spreads.<br>
+          6. Connect <strong style="color:var(--yellow)">70%</strong> of communities to win.
+        </div>
+      </div>
+      <div class="ic">
+        <div class="ic-icon">💧</div>
+        <div class="ic-title">Well</div>
+        <div class="ic-body">Provides clean water to a community. Connects one hex directly adjacent to your network.<div class="sep"></div><strong>Cost:</strong> <span class="tag tF">1 Funding</span><span class="tag tL">1 Labor</span><br><strong>Reach:</strong> 1 step from network.</div>
+      </div>
+      <div class="ic">
+        <div class="ic-icon">🔧</div>
+        <div class="ic-title">Pipeline</div>
+        <div class="ic-body">Extends your network further — <strong>you choose exactly which hex</strong> to connect, letting you route around terrain you don't want.<div class="sep"></div><strong>Cost:</strong> <span class="tag tM">2 Materials</span><br><strong>Reach:</strong> up to 2 steps. Fills in the path automatically.</div>
+      </div>
+      <div class="ic">
+        <div class="ic-icon">🏭</div>
+        <div class="ic-title">Treatment Station</div>
+        <div class="ic-body">Most powerful building. Connects a hex AND purifies drought neighbors. Creates a barrier that slows drought spread.<div class="sep"></div><strong>Cost:</strong> <span class="tag tF">2 Funding</span><span class="tag tL">1 Labor</span><span class="tag tM">1 Materials</span><br><strong>Reach:</strong> 1 step + drought shield.</div>
+      </div>
+      <div class="ic">
+        <div class="ic-icon">☠️</div>
+        <div class="ic-title">Drought</div>
+        <div class="ic-body">Spreads from the top-left each turn. Destroys communities before you reach them. Networked hexes are immune. Treatment stations block spread to neighbors.<div class="sep"></div><strong>Lose if:</strong> drought claims 40% of communities.</div>
+      </div>
+      <div class="ic" style="background:rgba(255,199,0,.05);border-color:rgba(255,199,0,.2)">
+        <div class="ic-body"><strong style="color:var(--yellow)">Real impact:</strong> A single well serves ~300 people for 20 years. 100% of donations go directly to water projects.<br><br><a href="https://charitywater.org" target="_blank" style="color:var(--teal)">charitywater.org →</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- START -->
+<div class="scr show" id="scr-start">
+  <div class="scard">
+    <div class="bicon">💧</div>
+    <h2>Source</h2>
+    <p>700 million people lack clean water. Build wells, pipelines, and treatment stations across a randomly generated region — before drought overtakes it.</p>
+    <div class="rgrid">
+      <div class="ritem"><div class="ri">💰</div><div class="rt">Funding</div><div class="rd">From Urban hexes. Needed for Wells & Treatment.</div></div>
+      <div class="ritem"><div class="ri">🔨</div><div class="rt">Labor</div><div class="rd">From Village hexes. Needed for Wells & Treatment.</div></div>
+      <div class="ritem"><div class="ri">⚙️</div><div class="rt">Materials</div><div class="rd">From Terrain hexes. Needed for Pipelines & Treatment.</div></div>
+      <div class="ritem"><div class="ri">🎯</div><div class="rt">You Choose</div><div class="rd">Pipeline: you pick which hex to connect. Route around bad terrain!</div></div>
+    </div>
+    <p style="font-size:11px;margin-bottom:18px">Drag tokens onto build slots → click Place → click a yellow hex on the board.</p>
+    <button class="btn-big" onclick="initGame()">Start Mission →</button>
+  </div>
+</div>
+
+<!-- END -->
+<div class="scr" id="scr-end">
+  <div class="scard">
+    <div class="bicon" id="e-icon">🏆</div>
+    <h2 id="e-title">Mission Complete</h2>
+    <p id="e-desc"></p>
+    <div class="irow">
+      <div class="ichip"><div class="iv" id="e-conn">0</div><div class="ik">Connected</div></div>
+      <div class="ichip"><div class="iv" id="e-turns">0</div><div class="ik">Turns</div></div>
+      <div class="ichip"><div class="iv" id="e-lost">0</div><div class="ik">Lost</div></div>
+    </div>
+    <div style="background:rgba(255,199,0,0.08);border:1px solid rgba(255,199,0,0.25);border-radius:10px;padding:14px 18px;margin:12px 0">
+      <p style="font-size:12px;color:var(--text);margin-bottom:10px"><strong style="color:var(--yellow)">100% of public donations go directly to water projects.</strong><br><span style="color:var(--muted);font-size:11px">The game ends here — but the real mission doesn't.</span></p>
+      <a class="cta-a" href="https://charitywater.org/donate" target="_blank" style="display:inline-block;font-size:13px;padding:10px 24px">💧 Donate at charitywater.org →</a>
+    </div>
+    <button class="bsm" onclick="initGame()">Play Again</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="tb" id="t-b"></div><div id="t-m"></div></div>
+
+<script>
+// =========================================================
+// CONSTANTS
+// =========================================================
+const COLS = 8, ROWS = 6;
+const R = 48; // hex circumradius
+
+// pointy-top hex: width = R*sqrt(3), height = R*2
+// spacing: horiz = R*sqrt(3), vert = R*1.5
+const HW = R * Math.sqrt(3); // horizontal distance between hex centers in same row
+const HH = R * 1.5;          // vertical distance between rows
+
+// costs: F=Funding, L=Labor, M=Materials
+const COSTS = {
+  well:  {F:1, L:1, M:0},
+  pipe:  {F:0, L:0, M:2},
+  treat: {F:2, L:1, M:1}
+};
+
+const TC = {
+  urban:   '#1e6b8c',
+  village: '#2d6a4f',
+  terrain: '#5a4a2a',
+  drought: '#7b2d2d',
+  net:     '#0a5e5b',
+  treat:   '#5a2d82'
+};
+
+// =========================================================
+// HEX GEOMETRY — pointy-top, offset rows (odd-r offset)
+// =========================================================
+// hex center in pixels
+function hxy(col, row) {
+  const x = HW * col + (row % 2 === 1 ? HW / 2 : 0) + R + 2;
+  const y = HH * row + R + 2;
+  return { x, y };
+}
+
+// given pixel coords, return closest hex {col,row} or null if too far
+function pickHex(px, py) {
+  let best = null, bd = Infinity;
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const { x, y } = hxy(col, row);
+      const d = Math.hypot(px - x, py - y);
+      if (d < bd) { bd = d; best = { col, row }; }
+    }
+  }
+  // accept if within circumradius + small margin
+  return bd <= R + 3 ? best : null;
+}
+
+// draw one pointy-top hexagon path
+function hexPath(ctx, cx, cy, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    // pointy-top: first vertex points up (offset 90 deg)
+    const angle = (Math.PI / 3) * i - Math.PI / 6;
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+}
+
+// neighbors for odd-r offset grid (pointy-top)
+function neighbors(col, row) {
+  let dirs;
+  if (row % 2 === 0) {
+    dirs = [[-1,-1],[0,-1],[1,0],[0,1],[-1,1],[-1,0]];
+  } else {
+    dirs = [[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,0]];
+  }
+  return dirs
+    .map(([dc,dr]) => ({ col: col+dc, row: row+dr }))
+    .filter(p => p.col >= 0 && p.col < COLS && p.row >= 0 && p.row < ROWS);
+}
+
+// =========================================================
+// STATE
+// =========================================================
+let G = {};
+let placing = null;      // 'well' | 'pipe' | 'treat' | null
+let validTargets = [];   // array of "col,row" strings
+
+function hkey(col, row) { return `${col},${row}`; }
+function getH(col, row) { return G.hex[row][col]; }
+
+// =========================================================
+// INIT
+// =========================================================
+function initGame() {
+  // build hex grid as 2D array for O(1) lookup
+  G = {
+    turn: 1,
+    hex: [],
+    res: { F: 3, L: 3, M: 3 },
+    staged: {
+      well:  { F: 0, L: 0, M: 0 },
+      pipe:  { F: 0, L: 0, M: 0 },
+      treat: { F: 0, L: 0, M: 0 }
+    },
+    network: new Set(),  // Set of "col,row" strings
+    totalCom: 0,
+    connected: 0,
+    lost: 0,
+    milestones: [],
+    log: []
+  };
+  placing = null;
+  validTargets = [];
+
+  // generate hexes
+  const TYPES = ['urban', 'village', 'terrain'];
+  for (let row = 0; row < ROWS; row++) {
+    G.hex.push([]);
+    for (let col = 0; col < COLS; col++) {
+      const t = TYPES[Math.floor(Math.random() * 3)];
+      const isCom = (t === 'village' && Math.random() < 0.5)
+                 || (t === 'urban'   && Math.random() < 0.3);
+      G.hex[row].push({ col, row, type: t, com: isCom, drought: false, net: false, bld: null });
+    }
+  }
+
+  // drought seeds: top-left corner
+  [[0,0],[1,0],[0,1],[2,0],[1,1]].forEach(([c,r]) => {
+    const h = getH(c, r);
+    h.drought = true; h.com = false;
+  });
+
+  // starting network: bottom-right area — one well
+  const sc = COLS - 2, sr = ROWS - 2;
+  const sh = getH(sc, sr);
+  sh.net = true; sh.bld = 'well';
+  G.network.add(hkey(sc, sr));
+
+  G.totalCom = 0;
+  for (let row = 0; row < ROWS; row++)
+    for (let col = 0; col < COLS; col++)
+      if (getH(col, row).com) G.totalCom++;
+  G.connected = countConnected();
+
+  // size canvas
+  const canvas = document.getElementById('board');
+  const { x: maxX } = hxy(COLS - 1, ROWS % 2 === 1 ? ROWS - 2 : ROWS - 1);
+  const { y: maxY } = hxy(0, ROWS - 1);
+  canvas.width  = Math.ceil(maxX + R * Math.sqrt(3) / 2 + R + 4);
+  canvas.height = Math.ceil(maxY + R + 4);
+
+  // attach click once (guard against double-attach)
+  canvas.onclick = onCanvasClick;
+
+  hideScreens();
+  clearLog();
+  addLog('🌊', 'Mission started. Build infrastructure to reach communities.');
+  earnResources(true);
+  redraw();
+  syncBuildBtns();
+}
+
+function countConnected() {
+  let n = 0;
+  for (let row = 0; row < ROWS; row++)
+    for (let col = 0; col < COLS; col++)
+      if (getH(col, row).com && getH(col, row).net) n++;
+  return n;
+}
+
+// =========================================================
+// RESOURCES
+// =========================================================
+function earnResources(silent) {
+  let f = 0, l = 0, m = 0;
+  G.network.forEach(k => {
+    const [c, r] = k.split(',').map(Number);
+    const h = getH(c, r);
+    if (!h || h.drought) return;
+    if (h.type === 'urban')        f++;
+    else if (h.type === 'village') l++;
+    else                           m++;
+  });
+  G.res.F += f; G.res.L += l; G.res.M += m;
+  if (!silent) addLog('📦', `+${f} Funding  +${l} Labor  +${m} Materials`);
+  renderTrays();
+}
+
+// =========================================================
+// TRADE  —  2 of give-type → 1 of get-type
+// =========================================================
+function doTrade() {
+  const give = document.getElementById('trade-give').value;
+  const get  = document.getElementById('trade-get').value;
+  if (give === get) { addLog('⚠️', 'Pick two different resources to trade.'); return; }
+  if (G.res[give] < 2) {
+    const names = { F: 'Funding', L: 'Labor', M: 'Materials' };
+    addLog('⚠️', `Need at least 2 ${names[give]} to trade.`); return;
+  }
+  G.res[give] -= 2;
+  G.res[get]  += 1;
+  const names = { F: 'Funding', L: 'Labor', M: 'Materials' };
+  addLog('🔄', `Traded 2 ${names[give]} → 1 ${names[get]}.`);
+  renderTrays();
+  syncBuildBtns();
+}
+
+
+let dragType = null;
+
+function renderTrays() {
+  ['F', 'L', 'M'].forEach(t => {
+    document.getElementById('cnt-' + t).textContent = G.res[t];
+    const tray = document.getElementById('tray-' + t);
+    tray.innerHTML = '';
+    const show = Math.min(G.res[t], 12);
+    for (let i = 0; i < show; i++) {
+      const tok = document.createElement('div');
+      tok.className = `tok ${t}`;
+      tok.textContent = t;
+      tok.draggable = true;
+      tok.addEventListener('dragstart', e => {
+        dragType = t;
+        tok.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', t);
+      });
+      tok.addEventListener('dragend', () => {
+        tok.classList.remove('dragging');
+        dragType = null;
+      });
+      tray.appendChild(tok);
+    }
+    if (G.res[t] > 12) {
+      const more = document.createElement('span');
+      more.style.cssText = 'font-size:9px;color:var(--muted);align-self:center;padding:0 2px';
+      more.textContent = `+${G.res[t] - 12}`;
+      tray.appendChild(more);
+    }
+  });
+}
+
+function dropReturn(e, t) {
+  e.preventDefault();
+  // tokens dragged back to tray — handled naturally since we re-render
+}
+
+function dzOver(e)  { e.preventDefault(); e.currentTarget.classList.add('over'); }
+function dzLeave(e) { e.currentTarget.classList.remove('over'); }
+
+function dzDrop(e, build) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('over');
+  if (!dragType) return;
+
+  const cost    = COSTS[build];
+  const staged  = G.staged[build];
+  const needed  = (cost[dragType] || 0) - (staged[dragType] || 0);
+
+  if (needed <= 0) { addLog('⚠️', `${build} doesn't need more ${dragType}.`); return; }
+  if (G.res[dragType] <= 0) { addLog('⚠️', `No ${dragType} left.`); return; }
+
+  G.res[dragType]--;
+  staged[dragType]++;
+  dragType = null;
+
+  renderTrays();
+  renderDZ(build);
+  syncBuildBtns();
+}
+
+function renderDZ(build) {
+  const dz = document.getElementById('dz-' + build);
+  const s = G.staged[build];
+  const total = s.F + s.L + s.M;
+  if (total === 0) { dz.textContent = 'Drop resources here'; return; }
+  dz.innerHTML = '';
+  const add = (t, n) => {
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement('div');
+      d.className = `tok ${t}`; d.textContent = t; d.style.cursor = 'default';
+      dz.appendChild(d);
+    }
+  };
+  add('F', s.F); add('L', s.L); add('M', s.M);
+}
+
+function syncBuildBtns() {
+  ['well', 'pipe', 'treat'].forEach(b => {
+    const s = G.staged[b], c = COSTS[b];
+    const ready = s.F >= c.F && s.L >= c.L && s.M >= c.M;
+    document.getElementById('bb-' + b).disabled = !ready;
+    document.getElementById('bi-' + b).classList.toggle('ready', ready);
+  });
+}
+
+// =========================================================
+// PLACEMENT MODE
+// =========================================================
+function activatePlacement(type) {
+  placing = type;
+  const steps = type === 'pipe' ? 2 : 1;
+  validTargets = computeTargets(steps);
+
+  const msgs = {
+    well:  'Well: click an adjacent highlighted hex to place',
+    pipe:  'Pipeline: click any highlighted hex within 2 steps — you control the route!',
+    treat: 'Treatment: click an adjacent highlighted hex to place + shield nearby hexes'
+  };
+  document.getElementById('pmsg').textContent = msgs[type];
+  document.getElementById('pbanner').classList.add('show');
+  document.getElementById('board').classList.add('pick');
+  redraw();
+}
+
+function cancelPlacement() {
+  if (!placing) return;
+  // refund staged tokens
+  const s = G.staged[placing];
+  G.res.F += s.F; G.res.L += s.L; G.res.M += s.M;
+  G.staged[placing] = { F: 0, L: 0, M: 0 };
+  renderDZ(placing);
+  placing = null; validTargets = [];
+  document.getElementById('pbanner').classList.remove('show');
+  document.getElementById('board').classList.remove('pick');
+  renderTrays(); syncBuildBtns(); redraw();
+}
+
+// BFS from network, up to `steps` hops, skip drought
+function computeTargets(steps) {
+  const visited = new Set([...G.network]);
+  let frontier = [...G.network];
+  for (let s = 0; s < steps; s++) {
+    const next = [];
+    frontier.forEach(k => {
+      const [c, r] = k.split(',').map(Number);
+      neighbors(c, r).forEach(({ col, row }) => {
+        const nk = hkey(col, row);
+        const nh = getH(col, row);
+        if (!visited.has(nk) && nh && !nh.drought) {
+          visited.add(nk); next.push(nk);
+        }
+      });
+    });
+    frontier = next;
+  }
+  // exclude already-networked hexes
+  return [...visited].filter(k => !G.network.has(k));
+}
+
+// =========================================================
+// CANVAS CLICK — place building
+// =========================================================
+function onCanvasClick(e) {
+  if (!placing) return;
+  // use offsetX/Y — coordinates relative to canvas element, no scroll issues
+  const px = e.offsetX, py = e.offsetY;
+  const hit = pickHex(px, py);
+  if (!hit) return;
+  const k = hkey(hit.col, hit.row);
+  if (!validTargets.includes(k)) { addLog('⚠️', 'Pick a highlighted (yellow) hex.'); return; }
+  commitPlacement(hit.col, hit.row);
+}
+
+function commitPlacement(col, row) {
+  const type = placing;
+
+  // clear staged
+  G.staged[type] = { F: 0, L: 0, M: 0 };
+  renderDZ(type);
+
+  if (type === 'pipe') {
+    pipelinePath(col, row);
+  } else {
+    connectHex(col, row, type);
+    if (type === 'treat') {
+      // purify drought neighbors
+      neighbors(col, row).forEach(({ col: nc, row: nr }) => {
+        const nh = getH(nc, nr);
+        if (nh && nh.drought) { nh.drought = false; addLog('✨', 'Treatment purified an adjacent drought hex!'); }
+      });
+    }
+  }
+
+  const label = { well: '💧 Well', pipe: '🔧 Pipeline', treat: '🏭 Treatment' }[type];
+  const h = getH(col, row);
+  addLog(label.split(' ')[0], `${label.slice(2)} placed at (${col},${row})${h.com ? ' — community connected!' : ''}.`);
+
+  placing = null; validTargets = [];
+  document.getElementById('pbanner').classList.remove('show');
+  document.getElementById('board').classList.remove('pick');
+
+  G.connected = countConnected();
+  syncBuildBtns(); renderTrays(); redraw(); checkMilestones(); checkWin();
+}
+
+function connectHex(col, row, bld) {
+  const h = getH(col, row);
+  h.net = true; h.bld = bld;
+  G.network.add(hkey(col, row));
+}
+
+// Pipeline: BFS shortest path from network edge to target, connect all intermediate hexes
+function pipelinePath(targetCol, targetRow) {
+  const targetKey = hkey(targetCol, targetRow);
+  const prev = {};
+  const visited = new Set([...G.network]);
+  let queue = [...G.network];
+
+  let found = false;
+  outer: while (queue.length) {
+    const next = [];
+    for (const k of queue) {
+      const [c, r] = k.split(',').map(Number);
+      for (const { col, row } of neighbors(c, r)) {
+        const nk = hkey(col, row);
+        const nh = getH(col, row);
+        if (visited.has(nk) || !nh || nh.drought) continue;
+        visited.add(nk);
+        prev[nk] = k;
+        next.push(nk);
+        if (nk === targetKey) { found = true; break outer; }
+      }
+    }
+    queue = next;
+  }
+
+  if (!found) { connectHex(targetCol, targetRow, 'pipe'); return; }
+
+  // trace path from target back to network
+  const path = [];
+  let cur = targetKey;
+  while (cur && !G.network.has(cur)) { path.push(cur); cur = prev[cur] || null; }
+  path.forEach(k => {
+    const [c, r] = k.split(',').map(Number);
+    const h = getH(c, r);
+    if (h && !h.net) connectHex(c, r, 'pipe');
+  });
+}
+
+// =========================================================
+// END TURN
+// =========================================================
+function endTurn() {
+  if (placing) { cancelPlacement(); return; }
+  G.turn++;
+  spreadDrought();
+  earnResources(false);
+  G.connected = countConnected();
+  redraw(); checkWin();
+}
+
+function spreadDrought() {
+  const toSpread = [];
+  const seen = new Set();
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const h = getH(col, row);
+      if (!h.drought) continue;
+      neighbors(col, row).forEach(({ col: nc, row: nr }) => {
+        const nh = getH(nc, nr);
+        const nk = hkey(nc, nr);
+        if (!nh || nh.drought || nh.net || seen.has(nk)) return;
+        // treatment station on any neighbor of target blocks spread
+        const blocked = neighbors(nc, nr).some(({ col: xc, row: xr }) => {
+          const xh = getH(xc, xr); return xh && xh.bld === 'treat';
+        });
+        if (!blocked && Math.random() < 0.3) { seen.add(nk); toSpread.push(nh); }
+      });
+    }
+  }
+  let lost = 0;
+  toSpread.forEach(h => {
+    h.drought = true;
+    if (h.com) { h.com = false; G.lost++; lost++; }
+  });
+  if (lost > 0) addLog('☠️', `Drought claimed ${lost} communit${lost === 1 ? 'y' : 'ies'}.`);
+  else if (toSpread.length > 0) addLog('🌵', `Drought spread to ${toSpread.length} new hex${toSpread.length === 1 ? '' : 'es'}.`);
+}
+
+// =========================================================
+// WIN/LOSE + MILESTONES
+// =========================================================
+const FACTS = [
+  { pct: 20, big: '💧 20%', msg: 'A single well serves ~300 people for 20 years.' },
+  { pct: 40, big: '🌊 40%', msg: 'Clean water cuts child mortality by up to 50%.' },
+  { pct: 60, big: '💪 60%', msg: 'Women worldwide spend 200M+ hours/day collecting water.' },
+  { pct: 80, big: '💰 80%', msg: '$1 invested in water yields $4–12 in economic return.' },
+];
+
+function checkMilestones() {
+  if (G.totalCom === 0) return;
+  const pct = Math.round(G.connected / G.totalCom * 100);
+  FACTS.forEach(f => {
+    if (pct >= f.pct && !G.milestones.includes(f.pct)) {
+      G.milestones.push(f.pct); showToast(f.big, f.msg);
+    }
+  });
+}
+
+function checkWin() {
+  if (G.totalCom === 0) return;
+  if (G.connected / G.totalCom >= 0.70) { endGame(true); return; }
+  if (G.lost / G.totalCom >= 0.40)     { endGame(false); }
+}
+
+function endGame(win) {
+  const pct = Math.round(G.connected / G.totalCom * 100);
+  document.getElementById('e-icon').textContent  = win ? '🏆' : '🌱';
+  document.getElementById('e-title').textContent = win ? 'Water Champion!' : 'Keep Fighting';
+  document.getElementById('e-desc').textContent  = win
+    ? `You connected ${pct}% of communities — roughly ${(G.connected * 280).toLocaleString()} people with clean water.`
+    : `Drought overtook the region at ${pct}% connected. Every community you reached still has clean water.`;
+  document.getElementById('e-conn').textContent  = G.connected;
+  document.getElementById('e-turns').textContent = G.turn;
+  document.getElementById('e-lost').textContent  = G.lost;
+  document.getElementById('scr-end').classList.add('show');
+}
+
+// =========================================================
+// DRAW
+// =========================================================
+function redraw() {
+  // update HUD
+  document.getElementById('h-turn').textContent = G.turn;
+  document.getElementById('h-lost').textContent = G.lost;
+  const pct = G.totalCom > 0 ? Math.round(G.connected / G.totalCom * 100) : 0;
+  document.getElementById('h-conn').textContent    = pct + '%';
+  document.getElementById('prog-lbl').textContent  = G.connected + '/' + G.totalCom;
+  document.getElementById('prog-f').style.width    = pct + '%';
+
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // draw network connection lines first (behind hexes)
+  ctx.strokeStyle = 'rgba(0,200,180,0.22)';
+  ctx.lineWidth = 3;
+  G.network.forEach(k => {
+    const [c, r] = k.split(',').map(Number);
+    const { x, y } = hxy(c, r);
+    neighbors(c, r).forEach(({ col: nc, row: nr }) => {
+      if (G.network.has(hkey(nc, nr))) {
+        const { x: nx, y: ny } = hxy(nc, nr);
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny); ctx.stroke();
+      }
+    });
+  });
+
+  // draw hexes
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      drawHex(ctx, getH(col, row));
+    }
+  }
+
+  // draw valid-target highlights (on top)
+  if (placing && validTargets.length) {
+    validTargets.forEach(k => {
+      const [c, r] = k.split(',').map(Number);
+      const { x, y } = hxy(c, r);
+      hexPath(ctx, x, y, R - 1);
+      ctx.fillStyle = 'rgba(255,199,0,0.18)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,199,0,0.85)';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    });
+  }
+}
+
+function drawHex(ctx, h) {
+  const { x, y } = hxy(h.col, h.row);
+  hexPath(ctx, x, y, R - 1);
+
+  let fill = TC[h.type];
+  if (h.drought) fill = TC.drought;
+  else if (h.net) fill = h.bld === 'treat' ? TC.treat : TC.net;
+
+  ctx.fillStyle = fill; ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1; ctx.stroke();
+
+  // community dot
+  if (h.com) {
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = h.net ? '#fff' : 'rgba(255,255,255,0.7)'; ctx.fill();
+  }
+
+  // building icon
+  if (h.bld) {
+    const icons = { well: '💧', pipe: '🔧', treat: '🏭' };
+    ctx.font = `${R - 4}px serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(icons[h.bld], x, y + (h.com ? -(R * 0.35) : 0));
+  }
+
+  // drought marker
+  if (h.drought) {
+    ctx.font = `${R - 6}px serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('☠', x, y);
+  }
+}
+
+// =========================================================
+// LOG
+// =========================================================
+function addLog(icon, msg) {
+  G.log.unshift({ icon, msg });
+  if (G.log.length > 25) G.log.pop();
+  const el = document.getElementById('log');
+  el.innerHTML = G.log.map(e => `<div class="le"><span>${e.icon}</span>${e.msg}</div>`).join('');
+}
+function clearLog() { G.log = []; document.getElementById('log').innerHTML = ''; }
+
+// =========================================================
+// TOAST
+// =========================================================
+let toastTimer;
+function showToast(big, msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('t-b').textContent = big;
+  document.getElementById('t-m').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+function hideScreens() {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('show'));
+}
+</script>
+</body>
+</html>
