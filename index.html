@@ -131,6 +131,45 @@ canvas.pick{cursor:crosshair}
 .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--teal);color:#fff;border-radius:9px;padding:9px 18px;font-size:12px;box-shadow:0 4px 18px rgba(0,161,157,.4);transition:transform .35s;z-index:200;text-align:center;pointer-events:none;max-width:300px}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast .tb{font-size:15px;font-weight:700;font-family:'Syne',sans-serif;margin-bottom:1px}
+
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
+  #app{height:auto;min-height:100vh;padding:8px 10px;overflow-y:auto}
+  .hdr{padding:12px 0;gap:8px;flex-wrap:wrap}
+  .hdr-brand img{height:20px}
+  .hdr-title{font-size:16px;order:-1;width:100%;text-align:center}
+  .hdr-title span{font-size:16px}
+  .hdr-brand{order:0}
+  .hdr-stats{gap:12px;order:1}
+  .hs .v{font-size:16px}
+  .main{flex-direction:column;overflow:visible;height:auto}
+  .col-l{width:100%;flex-direction:row;flex-wrap:wrap;gap:8px;overflow:visible}
+  .col-l .panel{flex:1;min-width:140px}
+  .col-l .panel:last-child{flex:0 0 100%}
+  .col-m{width:100%}
+  .col-r{width:100%;flex-direction:row;flex-wrap:wrap}
+  .col-r .panel,.col-r .ic{flex:1;min-width:140px}
+  .bpanel{min-height:0}
+  .canvas-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .log{height:70px}
+  .trow{flex-direction:column;gap:8px}
+  .trow > div{width:100%}
+  .bturn{width:100%;padding:12px}
+  .scard{padding:20px 16px}
+  .scard h2{font-size:20px}
+  .rgrid{grid-template-columns:1fr}
+  .legend{gap:5px}
+  .leg{font-size:8px}
+}
+
+@media (max-width: 480px) {
+  .hdr-title{font-size:14px}
+  .hdr-title span{font-size:14px}
+  .col-l .panel{flex:0 0 100%}
+  .bi{padding:7px 9px}
+  .dz{min-height:40px}
+  .tok{width:28px;height:28px;font-size:11px}
+}
 </style>
 </head>
 <body>
@@ -466,6 +505,24 @@ function getH(col, row) { return G.hex[row][col]; }
 // =========================================================
 // INIT
 // =========================================================
+function resizeCanvas() {
+  const canvas = document.getElementById('board');
+  const wrap = canvas.parentElement;
+  const availW = (wrap.clientWidth || window.innerWidth) - 20;
+  const minCanvasW = (COLS * R * Math.sqrt(3)) + R * 2 + 8;
+  const scale = availW < minCanvasW ? availW / minCanvasW : 1;
+  const { x: maxX } = hxy(COLS - 1, ROWS % 2 === 1 ? ROWS - 2 : ROWS - 1);
+  const { y: maxY } = hxy(0, ROWS - 1);
+  const rawW = Math.ceil(maxX + R * Math.sqrt(3) / 2 + R + 4);
+  const rawH = Math.ceil(maxY + R + 4);
+  canvas.width  = rawW;
+  canvas.height = rawH;
+  canvas.style.width  = Math.round(rawW * scale) + 'px';
+  canvas.style.height = Math.round(rawH * scale) + 'px';
+  canvas.style.maxWidth = '100%';
+  G._scale = scale;
+}
+
 function initGame() {
   // build hex grid as 2D array for O(1) lookup
   G = {
@@ -517,15 +574,15 @@ function initGame() {
       if (getH(col, row).com) G.totalCom++;
   G.connected = countConnected();
 
-  // size canvas
-  const canvas = document.getElementById('board');
-  const { x: maxX } = hxy(COLS - 1, ROWS % 2 === 1 ? ROWS - 2 : ROWS - 1);
-  const { y: maxY } = hxy(0, ROWS - 1);
-  canvas.width  = Math.ceil(maxX + R * Math.sqrt(3) / 2 + R + 4);
-  canvas.height = Math.ceil(maxY + R + 4);
+  resizeCanvas();
 
   // attach click once (guard against double-attach)
   canvas.onclick = onCanvasClick;
+  // re-size canvas on window resize (handles rotation on mobile)
+  if (!window._resizeListenerAdded) {
+    window._resizeListenerAdded = true;
+    window.addEventListener('resize', () => { if(G.hex) { resizeCanvas(); redraw(); } });
+  }
 
   hideScreens();
   clearLog();
@@ -729,7 +786,8 @@ function computeTargets(steps) {
 function onCanvasClick(e) {
   if (!placing) return;
   // use offsetX/Y — coordinates relative to canvas element, no scroll issues
-  const px = e.offsetX, py = e.offsetY;
+  const scale = G._scale || 1;
+  const px = e.offsetX / scale, py = e.offsetY / scale;
   const hit = pickHex(px, py);
   if (!hit) return;
   const k = hkey(hit.col, hit.row);
