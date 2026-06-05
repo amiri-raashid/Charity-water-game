@@ -108,9 +108,9 @@ canvas.pick{cursor:crosshair}
 .tM{background:rgba(123,143,245,.18);color:var(--M)}
 
 /* SCREENS */
-.scr{display:none;position:fixed;inset:0;background:rgba(10,22,40,.96);z-index:50;align-items:center;justify-content:center;padding:20px}
+.scr{display:none;position:fixed;inset:0;background:rgba(10,22,40,.96);z-index:50;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .scr.show{display:flex}
-.scard{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:480px;width:100%;text-align:center}
+.scard{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:480px;width:100%;text-align:center;margin:auto}
 .scard h2{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px}
 .scard p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px}
 .bicon{font-size:48px;margin-bottom:12px}
@@ -134,6 +134,19 @@ canvas.pick{cursor:crosshair}
 
 /* ── MOBILE RESPONSIVE ── */
 @media (max-width: 768px) {
+  /* Start screen */
+  .scr{padding:12px;align-items:flex-start;overflow-y:auto}
+  .scard{padding:20px 16px;border-radius:12px;margin:auto 0}
+  .scard h2{font-size:20px}
+  .bicon{font-size:36px;margin-bottom:8px}
+  .scard p{font-size:12px;margin-bottom:10px}
+  .btn-big{width:100%;padding:14px;font-size:15px;margin-top:4px}
+  .rgrid{grid-template-columns:1fr 1fr;gap:5px}
+  .ritem{padding:7px}
+  .ritem .ri{font-size:14px}
+  .ritem .rt{font-size:10px}
+  .ritem .rd{font-size:9px}
+  /* Layout */
   #app{height:auto;min-height:100vh;padding:8px 10px;overflow-y:auto}
   .hdr{padding:12px 0;gap:8px;flex-wrap:wrap}
   .hdr-brand img{height:20px}
@@ -145,19 +158,13 @@ canvas.pick{cursor:crosshair}
   .main{flex-direction:column;overflow:visible;height:auto}
   .col-l{width:100%;flex-direction:row;flex-wrap:wrap;gap:8px;overflow:visible}
   .col-l .panel{flex:1;min-width:140px}
-  .col-l .panel:last-child{flex:0 0 100%}
   .col-m{width:100%}
   .col-r{width:100%;flex-direction:row;flex-wrap:wrap}
   .col-r .panel,.col-r .ic{flex:1;min-width:140px}
   .bpanel{min-height:0}
   .canvas-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .log{height:70px}
-  .trow{flex-direction:column;gap:8px}
-  .trow > div{width:100%}
   .bturn{width:100%;padding:12px}
-  .scard{padding:20px 16px}
-  .scard h2{font-size:20px}
-  .rgrid{grid-template-columns:1fr}
   .legend{gap:5px}
   .leg{font-size:8px}
 }
@@ -169,6 +176,8 @@ canvas.pick{cursor:crosshair}
   .bi{padding:7px 9px}
   .dz{min-height:40px}
   .tok{width:28px;height:28px;font-size:11px}
+  .scard{padding:16px 12px}
+  .rgrid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -508,7 +517,7 @@ function getH(col, row) { return G.hex[row][col]; }
 function resizeCanvas() {
   const canvas = document.getElementById('board');
   const wrap = canvas.parentElement;
-  const availW = (wrap.clientWidth || window.innerWidth) - 20;
+  const availW = Math.max((wrap.clientWidth || 0), window.innerWidth - 40, 300);
   const minCanvasW = (COLS * R * Math.sqrt(3)) + R * 2 + 8;
   const scale = availW < minCanvasW ? availW / minCanvasW : 1;
   const { x: maxX } = hxy(COLS - 1, ROWS % 2 === 1 ? ROWS - 2 : ROWS - 1);
@@ -574,17 +583,18 @@ function initGame() {
       if (getH(col, row).com) G.totalCom++;
   G.connected = countConnected();
 
+  // hide screens FIRST so canvas has correct dimensions
+  hideScreens();
+
   resizeCanvas();
 
   // attach click once (guard against double-attach)
-  canvas.onclick = onCanvasClick;
+  document.getElementById('board').onclick = onCanvasClick;
   // re-size canvas on window resize (handles rotation on mobile)
   if (!window._resizeListenerAdded) {
     window._resizeListenerAdded = true;
     window.addEventListener('resize', () => { if(G.hex) { resizeCanvas(); redraw(); } });
   }
-
-  hideScreens();
   clearLog();
   addLog('🌊', 'Mission started. Build infrastructure to reach communities.');
   earnResources(true);
@@ -963,6 +973,7 @@ function redraw() {
   document.getElementById('prog-f').style.width    = pct + '%';
 
   const canvas = document.getElementById('board');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
